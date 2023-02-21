@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link href="css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <title>測試</title>
+</head>
+
+<body>
+    <!-- <script src="js/sdk.js"></script> -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/vue.min.js"></script>
+
+    <div class="card" style="width: 100%;" id="app">
+        <button type="button" class="btn btn-primary btn-sm" id="invite" @click="test1()">連結到
+            取得redis處理時間 按鈕</button>
+            <div v-for="item in redisData" style="background-color: black; color: white; padding: 5px; margin:5px;">
+                ajax呼叫時間點:{{item.requestTime}}&nbsp;&nbsp;php處理時間: {{item.redisTime}} &nbsp;&nbsp;http請求時間: {{item.redisHttpCallbackTime}}<br>
+            </div>
+        <!-- request連線時間:{{redisRequestConnenctTime}}<br>
+        response連線時間:{{redisResponseConnenctTime}} -->
+        <br>
+        <br>
+        <button type="button" class="btn btn-primary btn-sm" id="invite" @click="test2()">連結到
+            取得db連線速度 按鈕</button>
+            <div v-for="item in dbData" style="background-color: black; color: white; padding: 5px; margin:5px;">
+                ajax呼叫時間點:{{item.requestTime}}&nbsp;&nbsp;php處理時間: {{item.dbTime}}&nbsp;&nbsp;http請求時間: {{item.dbHttpCallbackTime}}<br>
+            </div>
+        <!-- request連線時間:{{dbRequestConnenctTime}}<br>
+        response連線時間:{{dbResponseConnenctTime}} -->
+    </div>
+</body>
+
+</html>
+
+<script>
+    Date.prototype.Format = function (fmt) {
+        var o = {
+            "M+": this.getMonth() + 1, //月份 
+            "d+": this.getDate(), //日 
+            "H+": this.getHours(), //小時 
+            "m+": this.getMinutes(), //分 
+            "s+": this.getSeconds(), //秒 
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+            "S": this.getMilliseconds() //毫秒 
+        };
+        if (/(y+)/.test(fmt)){
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        }
+        for (var k in o){
+            if (new RegExp("(" + k + ")").test(fmt)){
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));    
+            }
+        }
+        return fmt;
+    }
+
+    new Vue({
+        el: '#app',
+        data: {
+            redisData:[],
+            dbData:[],
+            redisTime: 0,
+            DBTime: 0,
+            redisHttpCallbackTime: 0,
+            redisRequestConnenctTime: 0,
+            redisResponseConnenctTime: 0,
+            dbHttpCallbackTime: 0,
+            dbRequestConnenctTime: 0,
+            dbResponseConnenctTime: 0
+        },
+        created() {
+
+        },
+        methods: {
+            test1() {
+                var _this = this;
+                var st = new Date();
+
+                $.ajax({
+                    url: "https://ccf.bllin.net/test",
+                    type: "POST",
+                    async: true,
+                    dataType: "json",
+                    data: { 'testConnection': 'redis', 'requestTime': new Date().getTime() },
+                    success: function (respon) {
+                        _this.redisData.push({'requestTime':st.Format("yyyy-MM-dd HH:mm:ss"),'redisHttpCallbackTime':(new Date().getTime() - st.getTime()) / 1000,'redisTime':respon.runTime});
+                        // _this.redisHttpCallbackTime = (new Date().getTime() - st.getTime()) / 1000;
+                        // _this.redisTime = respon.runTime;
+                        // _this.redisRequestConnenctTime = respon.requestConnenctTime;
+                        // _this.redisResponseConnenctTime = (new Date(respon.responseSt).getTime() - new Date().getTime()) / 1000
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                    }
+                });
+            },
+            test2() {
+                var _this = this;
+                var st = new Date();
+                $.ajax({
+                    url: "https://ccf.bllin.net/test",
+                    type: "POST",
+                    async: true,
+                    dataType: "json",
+                    data: { 'testConnection': 'db', 'requestTime': new Date().getTime() },
+                    success: function (respon) {
+                        _this.dbData.push({'requestTime':st.Format("yyyy-MM-dd HH:mm:ss"),'dbHttpCallbackTime':(new Date().getTime() - st.getTime()) / 1000,'dbTime':respon.runTime})
+                        // _this.dbHttpCallbackTime = (new Date().getTime() - st.getTime()) / 1000;
+                        // _this.DBTime = respon.runTime;
+                        // _this.dbRequestConnenctTime = respon.requestConnenctTime;
+                        // _this.dbResponseConnenctTime = (new Date(respon.responseSt).getTime() - new Date().getTime()) / 1000;
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                    }
+                });
+            },
+        }
+    })
+</script>

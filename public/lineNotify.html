@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link href="css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <title>接收通知token</title>
+</head>
+
+<body>
+    <script src="js/sdk.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="js/vue.min.js"></script>
+
+    <div class="card" style="width: 100%;" id="app">
+        <div id="login" style="color:red;" v-if="!isLoggedIn">
+            請先登入Line進行操作<br>
+            <button @click="Login">登入 LINE</button>
+        </div>
+        <button v-if="isLoggedIn" type="button" class="btn btn-primary btn-sm" id="invite" @click="oAuth2()">連結到
+            LineNotify 按鈕</button>
+    </div>
+</body>
+
+</html>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            userId: "",
+            tableData: [],
+            isLoggedIn: false
+        },
+        created() {
+            this.triggerLIFF();
+        },
+        methods: {
+            triggerLIFF() {
+                let liffID = '1655869245-O17LemkA';
+
+                liff.init({
+                    liffId: liffID
+                }).then(() => {
+                    this.isLoggedIn = liff.isLoggedIn();
+                    if (this.isLoggedIn) {
+                        const context = liff.getContext();
+                        this.userId = context.userId;
+                    }
+                }).catch(error => {
+                    console.log(error);
+                });
+            },
+            Login() {
+                if (!this.isLoggedIn) {
+                    liff.login({
+                        redirectUri: 'https://liff.line.me/1655869245-O17LemkA'
+                    });
+                }
+            },
+            oAuth2() {
+                var URL = 'https://notify-bot.line.me/oauth/authorize?';
+                URL += 'response_type=code';
+                URL += '&client_id=TK0eE6xFNdwlpD7eF07RHS';
+                URL += '&redirect_uri=https://ccf.bllin.net/lineCallback?token='+this.userId;
+                URL += '&scope=notify';
+                URL += '&state=NO_STATE';
+                // URL += '&response_mode=form_post';
+                window.location.href = URL;
+            }
+        }
+    })
+</script>
